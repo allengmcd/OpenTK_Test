@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Windows.Forms;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL4;
@@ -16,6 +18,8 @@ namespace OpenTK_Test
              0.0f,  0.5f, 0.0f  // Top vertex
         };
 
+        private readonly char[][] obstacles;
+
         private int counter;
 
         private int _vertexBufferObject;
@@ -25,54 +29,54 @@ namespace OpenTK_Test
         private int[] _vertexBufferObjects = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         private int[] _vertexArrayObjects = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-        private readonly float[] _vertices1 =
-        {
-            -1.0f, 1f, 0.0f, // Bottom-left vertex
-             1.0f, 0.9f, 0.0f, // Bottom-right vertex
-             1.0f,  1.0f, 0.0f  // Top vertex
-        };
-        private readonly float[] _vertices2 =
-        {
-            -1.0f, 1f, 0.0f, // Bottom-left vertex
-             1.0f, 0.9f, 0.0f, // Bottom-right vertex
-             -1.0f,  0.9f, 0.0f  // Top vertex
-        };
-        private readonly float[] _vertices3 =
-        {
-            -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-             0.5f, -0.5f, 0.0f, // Bottom-right vertex
-             0.0f,  0.5f, 0.0f  // Top vertex
-        };
-        private readonly float[] _vertices4 =
-        {
-            -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-             0.5f, -0.5f, 0.0f, // Bottom-right vertex
-             0.0f,  0.5f, 0.0f  // Top vertex
-        };
-        private readonly float[] _vertices5 =
-        {
-            -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-             0.5f, -0.5f, 0.0f, // Bottom-right vertex
-             0.0f,  0.5f, 0.0f  // Top vertex
-        };
-        private readonly float[] _vertices6 =
-        {
-            -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-             0.5f, -0.5f, 0.0f, // Bottom-right vertex
-             0.0f,  0.5f, 0.0f  // Top vertex
-        };
-        private readonly float[] _vertices7 =
-        {
-            -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-             0.5f, -0.5f, 0.0f, // Bottom-right vertex
-             0.0f,  0.5f, 0.0f  // Top vertex
-        };
-        private readonly float[] _vertices8 =
-        {
-            -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-             0.5f, -0.5f, 0.0f, // Bottom-right vertex
-             0.0f,  0.5f, 0.0f  // Top vertex
-        };
+        //private readonly float[] _vertices1 =
+        //{
+        //    -1.0f, 1f, 0.0f, // Bottom-left vertex
+        //     1.0f, 0.9f, 0.0f, // Bottom-right vertex
+        //     1.0f,  1.0f, 0.0f  // Top vertex
+        //};
+        //private readonly float[] _vertices2 =
+        //{
+        //    -1.0f, 1f, 0.0f, // Bottom-left vertex
+        //     1.0f, 0.9f, 0.0f, // Bottom-right vertex
+        //     -1.0f,  0.9f, 0.0f  // Top vertex
+        //};
+        //private readonly float[] _vertices3 =
+        //{
+        //    -0.5f, -0.5f, 0.0f, // Bottom-left vertex
+        //     0.5f, -0.5f, 0.0f, // Bottom-right vertex
+        //     0.0f,  0.5f, 0.0f  // Top vertex
+        //};
+        //private readonly float[] _vertices4 =
+        //{
+        //    -0.5f, -0.5f, 0.0f, // Bottom-left vertex
+        //     0.5f, -0.5f, 0.0f, // Bottom-right vertex
+        //     0.0f,  0.5f, 0.0f  // Top vertex
+        //};
+        //private readonly float[] _vertices5 =
+        //{
+        //    -0.5f, -0.5f, 0.0f, // Bottom-left vertex
+        //     0.5f, -0.5f, 0.0f, // Bottom-right vertex
+        //     0.0f,  0.5f, 0.0f  // Top vertex
+        //};
+        //private readonly float[] _vertices6 =
+        //{
+        //    -0.5f, -0.5f, 0.0f, // Bottom-left vertex
+        //     0.5f, -0.5f, 0.0f, // Bottom-right vertex
+        //     0.0f,  0.5f, 0.0f  // Top vertex
+        //};
+        //private readonly float[] _vertices7 =
+        //{
+        //    -0.5f, -0.5f, 0.0f, // Bottom-left vertex
+        //     0.5f, -0.5f, 0.0f, // Bottom-right vertex
+        //     0.0f,  0.5f, 0.0f  // Top vertex
+        //};
+        //private readonly float[] _vertices8 =
+        //{
+        //    -0.5f, -0.5f, 0.0f, // Bottom-left vertex
+        //     0.5f, -0.5f, 0.0f, // Bottom-right vertex
+        //     0.0f,  0.5f, 0.0f  // Top vertex
+        //};
 
         private Shader _shader;
 
@@ -80,6 +84,22 @@ namespace OpenTK_Test
         {
             counter = 0;
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
+            string[] lines = System.IO.File.ReadAllLines($"{System.IO.Path.GetDirectoryName(Application.ExecutablePath)}/Levels/Level1.txt");
+            
+            obstacles = new char[lines.Length][];
+
+            int lineCounter = 0;
+            // Display the file contents by using a foreach loop.
+            foreach (string line in lines)
+            {
+                //// Use a tab to indent each line of the file.
+                //Console.WriteLine("\t" + line);
+                obstacles[lineCounter] = new char[line.Length];
+                obstacles[lineCounter] = line.ToCharArray();
+                lineCounter++;
+            }
+
 
             //for(int i = 0; i < 10; i++)
             //{
@@ -174,6 +194,24 @@ namespace OpenTK_Test
         public void RenderLevel()
         {
             counter++;
+
+            for(int i = 0; i < obstacles.Length; i++)
+            {
+                for(int j = 0; j < 10; j++)
+                {
+                    float topLeftX = 0.1f;
+                    float topLeftY = 0.1f;
+                    float topRightX = topLeftX - 0.1f;
+                    float topRightY = topLeftY;
+                    float botLeftX = topLeftX;
+                    float botLeftY = topLeftY - 0.1f;
+                    float botRightX = topLeftX - 0.1f;
+                    float botRightY = topLeftY - 0.0f;
+
+                    DrawRectangle(new float[] { -1.0f, 1.0f }, new float[] { 1.0f, 1.0f }, new float[] { -1.0f, 0.9f }, new float[] { 1.0f, 0.9f });
+                }
+            }
+
             //for (int i = 0; i < 10; i++)
             //{
             //    float[] tempVertices =
