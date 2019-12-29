@@ -26,68 +26,25 @@ namespace OpenTK_Test
         private int _vertexArrayObject;
 
 
-        private int[] _vertexBufferObjects = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        private int[] _vertexArrayObjects = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-        //private readonly float[] _vertices1 =
-        //{
-        //    -1.0f, 1f, 0.0f, // Bottom-left vertex
-        //     1.0f, 0.9f, 0.0f, // Bottom-right vertex
-        //     1.0f,  1.0f, 0.0f  // Top vertex
-        //};
-        //private readonly float[] _vertices2 =
-        //{
-        //    -1.0f, 1f, 0.0f, // Bottom-left vertex
-        //     1.0f, 0.9f, 0.0f, // Bottom-right vertex
-        //     -1.0f,  0.9f, 0.0f  // Top vertex
-        //};
-        //private readonly float[] _vertices3 =
-        //{
-        //    -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-        //     0.5f, -0.5f, 0.0f, // Bottom-right vertex
-        //     0.0f,  0.5f, 0.0f  // Top vertex
-        //};
-        //private readonly float[] _vertices4 =
-        //{
-        //    -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-        //     0.5f, -0.5f, 0.0f, // Bottom-right vertex
-        //     0.0f,  0.5f, 0.0f  // Top vertex
-        //};
-        //private readonly float[] _vertices5 =
-        //{
-        //    -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-        //     0.5f, -0.5f, 0.0f, // Bottom-right vertex
-        //     0.0f,  0.5f, 0.0f  // Top vertex
-        //};
-        //private readonly float[] _vertices6 =
-        //{
-        //    -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-        //     0.5f, -0.5f, 0.0f, // Bottom-right vertex
-        //     0.0f,  0.5f, 0.0f  // Top vertex
-        //};
-        //private readonly float[] _vertices7 =
-        //{
-        //    -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-        //     0.5f, -0.5f, 0.0f, // Bottom-right vertex
-        //     0.0f,  0.5f, 0.0f  // Top vertex
-        //};
-        //private readonly float[] _vertices8 =
-        //{
-        //    -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-        //     0.5f, -0.5f, 0.0f, // Bottom-right vertex
-        //     0.0f,  0.5f, 0.0f  // Top vertex
-        //};
+        private int[][][] _vertexBufferObjects;
+        private int[][][] _vertexArrayObjects;
 
         private Shader _shader;
+
+        private int XBase = 20;
+
 
         public Level(int levelNumber)
         {
             counter = 0;
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-
+            _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
+            _shader.Use();
             string[] lines = System.IO.File.ReadAllLines($"{System.IO.Path.GetDirectoryName(Application.ExecutablePath)}/Levels/Level1.txt");
             
             obstacles = new char[lines.Length][];
+            _vertexBufferObjects = new int[lines.Length][][];
+            _vertexArrayObjects = new int[lines.Length][][];
 
             int lineCounter = 0;
             // Display the file contents by using a foreach loop.
@@ -97,21 +54,13 @@ namespace OpenTK_Test
                 //Console.WriteLine("\t" + line);
                 obstacles[lineCounter] = new char[line.Length];
                 obstacles[lineCounter] = line.ToCharArray();
+
+
+                _vertexBufferObjects[lineCounter] = new int[line.Length][];
+                _vertexArrayObjects[lineCounter] = new int[line.Length][];
+
                 lineCounter++;
             }
-
-
-            //for(int i = 0; i < 10; i++)
-            //{
-            //    float[] tempVertices =
-            //    {
-            //        -0.1f + (float)(i*0.1f), -0.1f + (float)Math.Sin((double)(counter * 0.01f) + (double)(i)), 0.0f, // Bottom-left vertex
-            //         0.1f + (float)(i*0.1f), -0.1f + (float)Math.Sin((double)(counter * 0.01f) + (double)(i)), 0.0f, // Bottom-right vertex
-            //         0.0f + (float)(i*0.1f),  0.1f + (float)Math.Sin((double)(counter * 0.01f) + (double)(i)), 0.0f  // Top vertex
-            //    };
-
-            //    DrawFrag(ref _vertexBufferObjects[i], ref _vertexArrayObjects[0], tempVertices);
-            //}
 
             //_vertexBufferObject = GL.GenBuffer();
             //GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
@@ -120,30 +69,93 @@ namespace OpenTK_Test
             //_shader.Use();
             //_vertexArrayObject = GL.GenVertexArray();
             //GL.BindVertexArray(_vertexArrayObject);
-            //GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+           // GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             //GL.EnableVertexAttribArray(0);
             //GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-        }
 
-        public void test()
-        {
-            char[] level = { '*' };
 
-            foreach(char item in level)
+
+            for (int i = 0; i < obstacles.Length; i++)
             {
-                switch(item)
+                for (int j = XBase; j < XBase+20; j++)
                 {
-                    case '*':
+                    _vertexBufferObjects[i][j] = new int[2];
+                    _vertexArrayObjects[i][j] = new int[2];
 
-                        break;
 
-                    default:
-                        break;
+                    _vertexBufferObjects[i][j][0] = GL.GenBuffer();
+                    GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObjects[i][j][0]);
+                    _vertexArrayObjects[i][j][0] = GL.GenVertexArray();
+                    GL.BindVertexArray(_vertexArrayObjects[i][j][0]);
+
+
+
+                    switch (obstacles[i][j])
+                    {
+                        case '*':
+                            float xUnit = (float)((float)(j - XBase) / 10.0f) - 1;
+                            float yUnit = (float)(-((float)i) / 10.0f) + 1;
+                            float topLeftX = xUnit;
+                            float topLeftY = yUnit;
+                            float topRightX = topLeftX + 0.1f;
+                            float topRightY = topLeftY;
+                            float botLeftX = topLeftX;
+                            float botLeftY = topLeftY - 0.1f;
+                            float botRightX = topLeftX + 0.1f;
+                            float botRightY = topLeftY - 0.1f;
+
+
+                            int a = 0, b = 0;
+
+                            float[] triangle1 =
+                            {
+                                topLeftX, topLeftY, 0.0f, // Bottom-left vertex
+                                botLeftX, botLeftY, 0.0f, // Bottom-right vertex
+                                topRightX, topRightY, 0.0f  // Top vertex
+                            };
+                            float[] triangle2 =
+                            {
+                                topRightX, topRightY, 0.0f, // Bottom-left vertex
+                                botRightX, botRightY, 0.0f, // Bottom-right vertex
+                                botLeftX, botLeftY, 0.0f  // Top vertex
+                            };
+
+
+                            _vertexBufferObjects[i][j][0] = GL.GenBuffer();
+                            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObjects[i][j][0]);
+                            _vertexArrayObjects[i][j][0] = GL.GenVertexArray();
+                            GL.BindVertexArray(_vertexArrayObjects[i][j][0]);
+
+                            GL.BufferData(BufferTarget.ArrayBuffer, triangle1.Length * sizeof(float), triangle1, BufferUsageHint.StaticDraw);
+                            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+                            GL.EnableVertexAttribArray(0);
+                            GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
+                            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+
+
+
+                            _vertexBufferObjects[i][j][1] = GL.GenBuffer();
+                            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObjects[i][j][1]);
+                            _vertexArrayObjects[i][j][0] = GL.GenVertexArray();
+                            GL.BindVertexArray(_vertexArrayObjects[i][j][1]);
+
+                            GL.BufferData(BufferTarget.ArrayBuffer, triangle2.Length * sizeof(float), triangle2, BufferUsageHint.StaticDraw);
+                            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+                            GL.EnableVertexAttribArray(0);
+                            GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
+                            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+
+                            break;
+
+                        default:
+                            break;
+                    }
+
                 }
             }
         }
 
-        void DrawRectangle(float[] topLeft, float[] topRight, float[] botLeft, float[] botRight)
+        void DrawRectangle(float[] topLeft, float[] topRight, float[] botLeft, float[] botRight, int[] VBO)
         {
             float[] triangle1 =
             {
@@ -158,89 +170,49 @@ namespace OpenTK_Test
                 botLeft[0],  botLeft[1], 0.0f  // Top vertex
             };
 
-            int a = 0, b = 0;
-
-            DrawFrag(ref a, ref b, triangle1);
-            DrawFrag(ref a, ref b, triangle2);
-
-            //  VBO = GL.GenBuffer();
-            //    GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            //    GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
-            //    _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
-            //    _shader.Use();
-            //    VAO = GL.GenVertexArray();
-            //    GL.BindVertexArray(VAO);
-            //    GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-            //    GL.EnableVertexAttribArray(0);
-            //    GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            //    GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
+            DrawFrag(ref VBO[0], triangle1);
+            DrawFrag(ref VBO[1], triangle2);
         }
 
-        public void DrawFrag(ref int VBO, ref int VAO, float[] vertices)
+        public void DrawFrag(ref int VBO, float[] vertices)
         {
-            VBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
-            _shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
-            _shader.Use();
-            VAO = GL.GenVertexArray();
-            GL.BindVertexArray(VAO);
             GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
         }
 
         public void RenderLevel()
         {
             counter++;
-
             for(int i = 0; i < obstacles.Length; i++)
             {
-                for(int j = 0; j < 10; j++)
+                for(int j = XBase; j < XBase+20; j++)
                 {
-                    float topLeftX = 0.1f;
-                    float topLeftY = 0.1f;
-                    float topRightX = topLeftX - 0.1f;
-                    float topRightY = topLeftY;
-                    float botLeftX = topLeftX;
-                    float botLeftY = topLeftY - 0.1f;
-                    float botRightX = topLeftX - 0.1f;
-                    float botRightY = topLeftY - 0.0f;
+                    switch (obstacles[i][j])
+                    {
+                        case '*':
+                            float xUnit = (float)((float)(j-XBase) / 10.0f) - 1;
+                            float yUnit = (float)(-((float)i) / 10.0f) + 1;
+                            float topLeftX = xUnit;
+                            float topLeftY = yUnit;
+                            float topRightX = topLeftX + 0.1f;
+                            float topRightY = topLeftY;
+                            float botLeftX = topLeftX;
+                            float botLeftY = topLeftY - 0.1f;
+                            float botRightX = topLeftX + 0.1f;
+                            float botRightY = topLeftY - 0.1f;
 
-                    DrawRectangle(new float[] { -1.0f, 1.0f }, new float[] { 1.0f, 1.0f }, new float[] { -1.0f, 0.9f }, new float[] { 1.0f, 0.9f });
+                            DrawRectangle(new float[] { topLeftX, topLeftY }, new float[] { topRightX, topRightY }, new float[] { botLeftX, botLeftY }, new float[] { botRightX, botRightY }, _vertexBufferObjects[i][j]);
+                            break;
+
+                        default:
+                            break;
+                    }
+                    
                 }
             }
-
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    float[] tempVertices =
-            //    {
-            //        -0.1f + (float)((i-5)*0.1f), -0.1f + (float)Math.Sin((double)(counter * 0.01f) + (double)(i)), 0.0f, // Bottom-left vertex
-            //         0.1f + (float)((i-5)*0.1f), -0.1f + (float)Math.Sin((double)(counter * 0.01f) + (double)(i)), 0.0f, // Bottom-right vertex
-            //         0.0f + (float)((i-5)*0.1f),  0.1f + (float)Math.Sin((double)(counter * 0.01f) + (double)(i)), 0.0f  // Top vertex
-            //    };
-
-            //    DrawFrag(ref _vertexBufferObjects[i], ref _vertexArrayObjects[0], tempVertices);
-            //    //_shader.Use();
-            //    //GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObjects[i]);
-            //    //GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
-            //}
-            //GL.BindVertexArray(_vertexArrayObject);
-            //GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
-
-            //DrawFrag(ref _vertexBufferObjects[0], ref _vertexArrayObjects[0], _vertices1);
-            //DrawFrag(ref _vertexBufferObjects[1], ref _vertexArrayObjects[1], _vertices2);
-
-            //int a = 0, b = 0;
-
-            //DrawFrag(ref a, ref b, _vertices1);
-            //DrawFrag(ref a, ref b, _vertices2);
-            DrawRectangle(new float[] { -1.0f, 1.0f }, new float[] { 1.0f, 1.0f }, new float[] { -1.0f, 0.9f }, new float[] { 1.0f, 0.9f });
-            DrawRectangle(new float[] { -1.0f, 0.9f }, new float[] { -0.9f, 0.9f }, new float[] { -1.0f, -0.9f }, new float[] { -0.9f, -0.9f });
-            DrawRectangle(new float[] { 1.0f, 1.0f }, new float[] { 1.0f, 1.0f }, new float[] { 1.0f, 1.0f }, new float[] { 1.0f, 1.0f });
-            DrawRectangle(new float[] { 1.0f, 1.0f }, new float[] { 1.0f, 1.0f }, new float[] { 1.0f, 1.0f }, new float[] { 1.0f, 1.0f });
-            DrawRectangle(new float[] { 1.0f, 1.0f }, new float[] { 1.0f, 1.0f }, new float[] { 1.0f, 1.0f }, new float[] { 1.0f, 1.0f });
         }
 
         public void Unload()
