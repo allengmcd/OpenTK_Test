@@ -69,6 +69,12 @@ namespace OpenTK_Test
                 Exit();
             }
 
+            if (input.IsKeyDown(Key.A))
+                CurrentLevel.XBase--;
+            if (input.IsKeyDown(Key.D))
+                CurrentLevel.XBase++;
+
+
             base.OnUpdateFrame(e);
         }
 
@@ -78,6 +84,7 @@ namespace OpenTK_Test
             GL.Viewport(0, 0, Width, Height);
             base.OnResize(e);
         }
+
 
 
         protected override void OnUnload(EventArgs e)

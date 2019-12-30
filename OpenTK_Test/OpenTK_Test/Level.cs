@@ -31,7 +31,7 @@ namespace OpenTK_Test
 
         private Shader _shader;
 
-        private int XBase = 20;
+        public int XBase = 20;
 
 
         public Level(int levelNumber)
