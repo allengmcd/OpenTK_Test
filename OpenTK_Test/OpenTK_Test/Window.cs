@@ -9,39 +9,17 @@ namespace OpenTK_Test
 {
     public class Window : GameWindow
     {
-        private readonly float[] _vertices =
-        {
-            -0.5f, -0.5f, 0.0f, // Bottom-left vertex
-             0.5f, -0.5f, 0.0f, // Bottom-right vertex
-             0.0f,  0.5f, 0.0f  // Top vertex
-        };
-
         Level CurrentLevel;
-
-        private int _vertexBufferObject;
-        private int _vertexArrayObject;
-
-        private Shader _shader;
-
+        Character CurrentCharacter;
 
         public Window(int width, int height, string title) : base(width, height, GraphicsMode.Default, title) { }
 
 
         protected override void OnLoad(EventArgs e)
         {
-            CurrentLevel = new Level(1);
+            CurrentLevel = new Level(20);
+            CurrentCharacter = new Character(0.0f, 0.0f);
 
-            //GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            //_vertexBufferObject = GL.GenBuffer();
-            //GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            //GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Length * sizeof(float), _vertices, BufferUsageHint.StaticDraw);
-            //_shader = new Shader("Shaders/shader.vert", "Shaders/shader.frag");
-            //_shader.Use();
-            //_vertexArrayObject = GL.GenVertexArray();
-            //GL.BindVertexArray(_vertexArrayObject);
-            //GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-            //GL.EnableVertexAttribArray(0);
-            //GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
             base.OnLoad(e);
         }
 
@@ -51,10 +29,7 @@ namespace OpenTK_Test
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
             CurrentLevel.RenderLevel();
-
-            //_shader.Use();
-            //GL.BindVertexArray(_vertexArrayObject);
-            //GL.DrawArrays(PrimitiveType.Triangles, 0, 3);
+            CurrentCharacter.RenderCharacter();
             SwapBuffers();
             base.OnRenderFrame(e);
         }
@@ -70,9 +45,37 @@ namespace OpenTK_Test
             }
 
             if (input.IsKeyDown(Key.A))
-                CurrentLevel.XBase--;
+            {
+                //int temp = CurrentLevel.XBase - 1;
+                //CurrentLevel.Unload();
+                //base.OnUnload(e);
+                CurrentCharacter.LocationX -= 0.005f;
+                //CurrentLevel = new Level(temp);
+            }
             if (input.IsKeyDown(Key.D))
-                CurrentLevel.XBase++;
+            {
+                //int temp = CurrentLevel.XBase+1;
+                //CurrentLevel.Unload();
+                //base.OnUnload(e);
+                CurrentCharacter.LocationX += 0.005f;
+                //CurrentLevel = new Level(temp);
+            }
+            if (input.IsKeyDown(Key.S))
+            {
+                //int temp = CurrentLevel.XBase - 1;
+                //CurrentLevel.Unload();
+                //base.OnUnload(e);
+                CurrentCharacter.LocationY -= 0.005f;
+               // CurrentLevel = new Level(temp);
+            }
+            if (input.IsKeyDown(Key.W))
+            {
+                //int temp = CurrentLevel.XBase + 1;
+                //CurrentLevel.Unload();
+                //base.OnUnload(e);
+                CurrentCharacter.LocationY += 0.005f;
+                //CurrentLevel = new Level(temp);
+            }
 
 
             base.OnUpdateFrame(e);
